@@ -19,11 +19,24 @@
 
 from setuptools import setup, find_packages
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
 setup(
     name="mockrdd",
     description="Utility for testing PySpark code",
     version="0.0.1",
+    author="Matt Hagy",
+    author_email="matt@liveramp.com",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    url="https://github.com/LiveRamp/mockrdd",
     packages=find_packages(),
     setup_requires=["pytest-runner"],
-    tests_require=["pytest"]
+    tests_require=["pytest"],
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+    ]
 )
