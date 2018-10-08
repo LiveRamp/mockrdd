@@ -179,46 +179,45 @@ class MockRDD:
 
     The general use case is for testing PySpark computation to find bugs and verify the
     correctness of computing the desired results. For example, say I wanted to compute
-    the number of distinct maintained PELs in a RDD containing dictionaries with 'pel'
-    attributes. I would start by writing a function that performs the operations from
+    the number of distinct distinct IP addresses starting with "127." in collection of logs.
+    I would start by writing a function that performs the operations from
     an input RDD.
 
-    def count_unique_mpels(input_rdd):
-        # Note this is a bad way to compute cardinality. Instead you should use
-        # lr_py_utils.adaptive_cardinality.AdaptiveCardinality
-        return (input_rdd
-                .map(lambda x: x['pel'])
-                .filter(lambda p: p.startswith('XY'))
+    def count_unique_ips(logs_rdd):
+        # Note this is a bad way to compute cardinality. Instead us an HLL.
+        return (logs_rdd
+                .map(lambda x: x['ip'])
+                .filter(lambda p: p.startswith('127.'))
                 .distinct()
                 .count())
 
     Now that I have a function for building the operations on an input RDD, I can pass in a
-    mock RDD filled with test data and verify that I get the expected results. Very simple
+    MockRDD filled with test data and verify that I get the expected results. Very simple
     input is used to make verification trivial.
 
     # Ensure the operations handles the empty input case
-    assert count_unique_mpels(MockRDD.empty()) == 0
+    assert count_unique_ips(MockRDD.empty()) == 0
 
-    # Ensure we can recognize a single mPEL
-    assert count_unique_mpels(MockRDD.from_seq(['XY1005ABC'])) == 1
+    # Ensure we can recognize a single IP starting with the prefix
+    assert count_unique_ips(MockRDD.from_seq(['127.0.0.1'])) == 1
 
-    # Ensure we're not counting dPELs
-    assert count_unique_mpels(MockRDD.from_seq(['Xi1005ABC'])) == 0
+    # Ensure we're not counting other IPs
+    assert count_unique_mpels(MockRDD.from_seq(['0.0.0.0'])) == 0
 
-    # Ensure we're not doubling counting the same mPEL
-    assert count_unique_mpels(MockRDD.from_seq(['XY1005ABC', 'XY1005ABC'])) == 1
+    # Ensure we're not doubling counting the same IP
+    assert count_unique_mpels(MockRDD.from_seq(['127.0.0.1', '127.0.0.1'])) == 1
 
     # Ensure we can count more than one
-    assert count_unique_mpels(MockRDD.from_seq(['XY1005ABC', 'XY100XYZ'])) == 2
+    assert count_unique_mpels(MockRDD.from_seq(['127.0.0.1', '127.0.0.2'])) == 2
 
-    # Ensure the combination of mPELs and dPELs doesn't cause any problems
-    assert count_unique_mpels(MockRDD.from_seq(['XY1005ABC', 'Xi1005ABC'])) == 1
+    # Ensure the combination of matching and non-matching doesn't cause any problems
+    assert count_unique_mpels(MockRDD.from_seq(['127.0.0.1', '0.0.0.0'])) == 1
 
     This may appear to be a trivial example, but I've commonly made small typos that weren't
     triggered until the workflow had already been running for a while. This is a major
     downside to using a language that doesn't resolve symbols at compile time. (Technically
     Python does, but by default doesn't warn if you used an undefined global variable.
-    There are good Python code analysis tools such as pylint that can catch these bugs)
+    There are good Python code analysis tools such as mypy that can catch these bugs)
 
     Additionally, we can break up our complicated PySpark operations into a sequence of
     simpler ones and verify the correctness of each operations more easily. We can have
