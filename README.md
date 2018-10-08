@@ -7,7 +7,7 @@ extra benefits.
 * More meaningful error messages for debugging issues
 * Straightforward to running within pdb
 * Removes Spark dependencies from development and testing environments
-* No Spark overhead when running through a large test suites
+* No Spark overhead when running through a large test suite
 
 Simple example of using MockRDD in a test.
 ```python
