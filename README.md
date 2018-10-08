@@ -1,7 +1,7 @@
 # mockrdd
 A Python module for testing PySpark code.
 
-The MockRDD class offers similar behavior to pyspark.RDD with the following
+The MockRDD class offers similar behavior to [pyspark.RDD](http://spark.apache.org/docs/2.1.0/api/python/pyspark.html#pyspark.RDD) with the following
 extra benefits.
 * Extensive sanity checks to identify invalid inputs
 * More meaningful error messages for debugging issues
@@ -23,6 +23,6 @@ assert job(MockRDD.of(2)).collect() == [4]
 
 Conventionally, you'd include a main method to hook the RDD up to product sources and sinks.
 Further, the testing would be included in a separate file and use the module
-`unitetest` for defining test cases.
+`unittest` for defining test cases.
 
 See the docstring of `mockrdd.MockRDD` for more information.
