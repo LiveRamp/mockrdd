@@ -179,14 +179,13 @@ class MockRDD:
 
     The general use case is for testing PySpark computation to find bugs and verify the
     correctness of computing the desired results. For example, say I wanted to compute
-    the number of distinct distinct IP addresses starting with "127." in collection of logs.
+    the number of distinct distinct IP addresses starting with "127." in collection of IPs.
     I would start by writing a function that performs the operations from
     an input RDD.
 
-    def count_unique_ips(logs_rdd):
+    def count_unique_ips(ips_rdd):
         # Note this is a bad way to compute cardinality. Instead us an HLL.
-        return (logs_rdd
-                .map(lambda x: x['ip'])
+        return (ips_rdd
                 .filter(lambda p: p.startswith('127.'))
                 .distinct()
                 .count())
