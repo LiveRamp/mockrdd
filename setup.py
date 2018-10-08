@@ -25,7 +25,7 @@ with open("README.md", "r") as fh:
 setup(
     name="mockrdd",
     description="Utility for testing PySpark code",
-    version="0.0.1",
+    version="0.0.2",
     author="Matt Hagy",
     author_email="matt@liveramp.com",
     long_description=long_description,
