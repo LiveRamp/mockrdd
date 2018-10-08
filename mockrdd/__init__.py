@@ -58,20 +58,20 @@ def unpack_key_value_pair(entry) -> typing.Tuple[object, object]:
     try:
         k, v = entry
     except (TypeError, ValueError, AttributeError):
-        raise ValueError(f"{entry} is not a key/value pair")
+        raise ValueError(f"{repr(entry)} is not a key/value pair")
     return k, v
 
 
-def check_iterable(obj) -> typing.Iterator:
+def check_iterable(obj, source) -> typing.Iterator:
     try:
         return iter(obj)
     except (TypeError, ValueError, AttributeError):
-        raise TypeError(f"{obj} is not iterable")
+        raise TypeError(f"{repr(obj)} returned by {source} is not iterable")
 
 
 def check_callable(obj) -> typing.Callable:
     if not callable(obj):
-        raise TypeError(f"{obj} is not callable")
+        raise TypeError(f"{repr(obj)} is not callable")
     return obj
 
 
@@ -267,7 +267,7 @@ class MockRDD:
         if self.ran and not self.allow_multiple_passes:
             warnings.warn("attempt to read from a non-persisted MockRDD multiple times")
         self.ran = True
-        return check_iterable(self.func(self.source_seq))
+        return check_iterable(self.func(self.source_seq), self.func)
 
     def collect(self) -> list:
         return list(self)
@@ -306,7 +306,7 @@ class MockRDD:
         func = check_callable(func)
 
         def wrapper(source_seq):
-            return check_iterable(func(0, source_seq))
+            return check_iterable(func(0, source_seq), func)
 
         return self._chain(wrapper)
 
@@ -323,8 +323,8 @@ class MockRDD:
         func = check_callable(func)
 
         def expander(source_seq):
-            for x in check_iterable(source_seq):
-                yield from check_iterable(func(x))
+            for x in source_seq:
+                yield from check_iterable(func(x), func)
 
         return self._chain(expander)
 
@@ -341,9 +341,9 @@ class MockRDD:
         func = check_callable(func)
 
         def wrapper(source_seq):
-            for entry in check_iterable(source_seq):
+            for entry in source_seq:
                 k, v = unpack_key_value_pair(entry)
-                for v2 in check_iterable(func(v)):
+                for v2 in check_iterable(func(v), func):
                     yield k, v2
 
         return self._chain(wrapper)
