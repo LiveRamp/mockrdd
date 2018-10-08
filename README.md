@@ -25,4 +25,4 @@ Conventionally, you'd include a main method to hook the RDD up to product source
 Further, the testing would be included in a separate file and use the module
 [unittest](https://docs.python.org/3/library/unittest.html) for defining test cases.
 
-See the docstring of `mockrdd.MockRDD` for more information.
+See the docstring of [mockrdd.MockRDD](https://github.com/LiveRamp/mockrdd/blob/master/mockrdd/__init__.py#L166) for more information.
