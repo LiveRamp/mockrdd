@@ -17,16 +17,7 @@
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-import unittest
-
 from setuptools import setup, find_packages
-
-
-def my_test_suite():
-    test_loader = unittest.TestLoader()
-    test_suite = test_loader.discover('test', pattern='test_*.py')
-    return test_suite
-
 
 setup(
     name="mockrdd",
