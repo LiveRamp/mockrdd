@@ -1,6 +1,8 @@
 # mockrdd
 A Python3 module for testing PySpark code.
 
+[![Build Status](https://travis-ci.com/LiveRamp/mockrdd.svg?branch=master)](https://travis-ci.com/LiveRamp/mockrdd)
+
 The MockRDD class offers similar behavior to [pyspark.RDD](http://spark.apache.org/docs/2.1.0/api/python/pyspark.html#pyspark.RDD) with the following
 extra benefits.
 * Extensive sanity checks to identify invalid inputs
