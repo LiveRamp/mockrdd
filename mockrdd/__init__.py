@@ -113,7 +113,6 @@ def run_combine_by_key(entries: typing.Iterator[typing.Tuple[object, object]],
 
     rnd = make_random(rnd)
     if rnd is not None:
-        entries_copy = list(entries_copy)
         rnd.shuffle(entries_copy)
 
     combiners = {}
@@ -138,6 +137,12 @@ def identity(x):
 
 
 def add_value_type(rdd: 'MockRdd', value_type: object) -> 'MockRDD':
+    """ Covert RDD[(k, v)]) into RDD[(k, (value_type, v)]
+
+    :param rdd: RDD of key/value pairs
+    :param value_type: value type to insert
+    :return: RDD of key/value pairs with augmented values
+    """
     return rdd.mapValues(lambda x: (value_type, x))
 
 
@@ -180,8 +185,7 @@ class MockRDD:
     The general use case is for testing PySpark computation to find bugs and verify the
     correctness of computing the desired results. For example, say I wanted to compute
     the number of distinct distinct IP addresses starting with "127." in collection of IPs.
-    I would start by writing a function that performs the operations from
-    an input RDD.
+    I would start by writing a function that performs the operations from an input RDD.
 
     def count_unique_ips(ips_rdd):
         # Note this is a bad way to compute cardinality. Instead us an HLL.
@@ -216,7 +220,7 @@ class MockRDD:
     triggered until the workflow had already been running for a while. This is a major
     downside to using a language that doesn't resolve symbols at compile time. (Technically
     Python does, but by default doesn't warn if you used an undefined global variable.
-    There are good Python code analysis tools such as mypy that can catch these bugs)
+    There are good Python code analysis tools such as mypy that can catch these bugs.)
 
     Additionally, we can break up our complicated PySpark operations into a sequence of
     simpler ones and verify the correctness of each operations more easily. We can have
@@ -229,15 +233,14 @@ class MockRDD:
                  source_seq: typing.Union[typing.Iterator, typing.Iterable],
                  rnd: RANDOM_ARG_TYPE = None,
                  allow_multiple_passes: bool = False):
-        """Internal constructor. Use the classmethods `from_seq`, `empty`, and `of` to instantiate
-        a MockRDD
+        """Internal constructor. Use the classmethods `from_seq`, `empty`, and `of` to instantiate a MockRDD
 
         :param func: an function performed on source_seq to create the output for this RDD
         :param source_seq: an sequence of input value to this RDD
         :param rnd: a random number generator for used to introduce non-deterministic behavior.
                     Can be disabled by passing False.
-        :param allow_multiple_passes: by default a MockRDD can only be ran once, but `persist()`
-                    allows this to be overridden.
+        :param allow_multiple_passes: by default, we warn if a MockRDD is ran multiple times, but `persist()`
+                    allows it to be ran multiple times.
         """
         self.func = func
         self.source_seq = source_seq
@@ -265,7 +268,7 @@ class MockRDD:
         if self.ran and not self.allow_multiple_passes:
             warnings.warn("attempt to read from a non-persisted MockRDD multiple times")
         self.ran = True
-        return check_iterable(self.func(self.source_seq), self.func)
+        return iter(check_iterable(self.func(self.source_seq), self.func))
 
     def collect(self) -> list:
         return list(self)
@@ -273,13 +276,13 @@ class MockRDD:
     def collectAsMap(self) -> dict:
         return dict(self.collect())
 
-    def cache(self) -> 'MockRDD':
-        return self.persist()
-
     def _chain(self, func, allow_multiple_passes=None) -> 'MockRDD':
         if allow_multiple_passes is None:
             allow_multiple_passes = self.allow_multiple_passes
         return self.__class__(func, self, rnd=self.rnd, allow_multiple_passes=allow_multiple_passes)
+
+    def cache(self) -> 'MockRDD':
+        return self.persist()
 
     def persist(self, storageLevel=None) -> 'MockRDD':
         """Ensure that the MockRDD can be called multiple times, regardless of its input source
