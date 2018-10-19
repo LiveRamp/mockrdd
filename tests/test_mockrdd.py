@@ -18,9 +18,11 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 
 import unittest
-from collections import Counter
 import typing
+from collections import Counter
+from random import Random
 
+import mockrdd
 from mockrdd import MockRDD, identity
 
 
@@ -65,23 +67,67 @@ def col_eq(a, b, allow_duplicates=False, element_converter=identity):
         raise AssertionError(message + ": " + ", ".join(differences))
 
 
+class TestHelpers(unittest.TestCase):
+
+    def test_make_random(self):
+        self.assertIsInstance(mockrdd.make_random(None), Random)
+        self.assertIsInstance(mockrdd.make_random(1), Random)
+        rnd = Random()
+        self.assertIs(mockrdd.make_random(rnd), rnd)
+        self.assertIs(mockrdd.make_random(False), None)
+        with self.assertRaises(TypeError):
+            mockrdd.make_random('invalid input')
+
+    def test_unpack_key_value_pair(self):
+        self.assertEqual(mockrdd.unpack_key_value_pair((1, 2)), (1, 2))
+        with self.assertRaises(ValueError):
+            mockrdd.unpack_key_value_pair(None)
+        with self.assertRaises(ValueError):
+            mockrdd.unpack_key_value_pair([])
+        with self.assertRaises(ValueError):
+            mockrdd.unpack_key_value_pair([1])
+        with self.assertRaises(ValueError):
+            mockrdd.unpack_key_value_pair([1, 2, 3])
+
+    def test_check_iterable(self):
+        self.assertEqual(list(mockrdd.check_iterable([], 'source')), [])
+        self.assertEqual(list(mockrdd.check_iterable([1], 'source')), [1])
+        with self.assertRaises(TypeError):
+            mockrdd.check_iterable(1, 'source')
+
+    def test_check_callable(self):
+        self.assertIs(mockrdd.check_callable(identity), identity)
+        with self.assertRaises(TypeError):
+            mockrdd.check_callable(1)
+
+    def test_check_partitions(self):
+        mockrdd.check_partitions(None)
+        mockrdd.check_partitions(1)
+        mockrdd.check_partitions(100000)
+        with self.assertRaises(TypeError):
+            mockrdd.check_partitions(1.0)
+        with self.assertRaises(ValueError):
+            mockrdd.check_partitions(0)
+        with self.assertRaises(ValueError):
+            mockrdd.check_partitions(-1)
+
+
 class TestMockRDD(unittest.TestCase):
     def test_empty(self):
-        rdd = MockRDD(identity, [])
-        self.assertEqual(list(rdd), [])
+        self.assertEqual(list(MockRDD(identity, [])), [])
 
     def test_single(self):
-        rdd = MockRDD(identity, [1])
-        self.assertEqual(list(rdd), [1])
+        self.assertEqual(list(MockRDD(identity, [1])), [1])
 
     def test_multiple(self):
         x = [1, 3, '5', (), 102]
-        rdd = MockRDD(identity, x)
-        self.assertEqual(list(rdd), x)
+        self.assertEqual(list(MockRDD(identity, x)), x)
 
     def test_collect(self):
-        rdd = MockRDD(identity, [1])
-        self.assertEqual(rdd.collect(), [1])
+        self.assertEqual(MockRDD(identity, [1]).collect(), [1])
+
+    def test_collectAsMap(self):
+        self.assertEqual(MockRDD(identity, [(1, 2)]).collectAsMap(), {1: 2})
 
     def test_only_one_pass(self):
         rdd = MockRDD(identity, iter(range(5)))

@@ -75,7 +75,7 @@ def check_callable(obj) -> typing.Callable:
     return obj
 
 
-def check_partitions(num_partitions: typing.Optional[int]):
+def check_partitions(num_partitions):
     if num_partitions is not None:
         if not isinstance(num_partitions, int):
             raise TypeError(f"{num_partitions} is not an integer")
@@ -244,10 +244,6 @@ class MockRDD:
         """
         self.func = func
         self.source_seq = source_seq
-        if rnd is None:
-            if isinstance(source_seq, MockRDD):
-                assert source_seq.rnd is not None
-                rnd = source_seq.rnd
         self.rnd = make_random(rnd)
         self.allow_multiple_passes = bool(allow_multiple_passes)
         self.ran = False
