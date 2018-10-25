@@ -11,6 +11,9 @@ extra benefits.
 * Removes Spark dependencies from development and testing environments
 * No Spark overhead when running through a large test suite
 
+See our blog post
+[Introducing MockRDD for testing PySpark code](https://liveramp.com/engineering/introducing-mockrdd-for-testing-pyspark-code/) for additional details.
+
 Here's a simple example of using MockRDD in a test.
 ```python
 from mockrdd import MockRDD
